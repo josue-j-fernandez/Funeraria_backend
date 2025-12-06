@@ -1,0 +1,36 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma-client"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model estado {
+  id       Int      @id @default(autoincrement())
+  servicio String?
+  version  String?
+  entorno  String?
+  estado   String?
+  fecha    DateTime
+  hora     Int
+}
+
+model mensajeria {
+  id            Int      @id @default(autoincrement())
+  mensaje       String?
+  fechaRegistro DateTime
+  horaRegistro  DateTime
+  id_usuario    Int
+  usuario       dato     @relation(fields: [id_usuario], references: [id])
+}
+
+model dato {
+  id          Int          @id @default(autoincrement())
+  nombre      String?
+  correo      String?
+  edad        Int
+  mensajerias mensajeria[]
+}
