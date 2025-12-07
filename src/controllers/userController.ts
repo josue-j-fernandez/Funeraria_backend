@@ -1,5 +1,7 @@
+//src/controllers/userController.ts
 import { Request, Response } from "express";
 import { UserService } from "../services/userServicio";
+import { PrismaClientKnownRequestError } from "@prisma/client/runtime/library";
 
 export const UserController = {
   async getAll(req: Request, res: Response) {
@@ -28,7 +30,7 @@ export const UserController = {
       return res.json(newUser);
     } catch (error: any) {
       console.error("Error al crear usuario:", error);
-      return res.status(400).json({ error: error.message });
+      return res.status(201).json({ error: error.message });
     }
   },
 
@@ -48,8 +50,11 @@ export const UserController = {
 
       return res.json(updatedUser);
     } catch (error: any) {
-      console.error("Error al actualizar usuario:", error);
-      return res.status(404).json({ error: "Usuario no encontrado" });
+      if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
+            return res.status(404).json({ error: "Usuario no encontrado para la actualización" });
+        }
+        console.error("Error al actualizar usuario:", error);
+        return res.status(500).json({ error: "Error interno al actualizar usuario" });
     }
   },
 
@@ -57,11 +62,15 @@ export const UserController = {
     const id = Number(req.params.id);
 
     try {
-      await UserService.delete(id);
-      return res.json({ message: "Usuario eliminado" });
+        await UserService.delete(id);
+        return res.json({ message: "Usuario eliminado correctamente" });
     } catch (error: any) {
-      console.error("Error al eliminar usuario:", error);
-      return res.status(404).json({ error: "Usuario no encontrado" });
+
+        if (error instanceof PrismaClientKnownRequestError && error.code === 'P2025') {
+            return res.status(404).json({ error: "Usuario no encontrado para la eliminación" });
+        }
+        console.error("Error al eliminar usuario:", error);
+        return res.status(500).json({ error: "Error interno al eliminar usuario" });
     }
   },
 

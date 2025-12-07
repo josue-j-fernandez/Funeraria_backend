@@ -11,17 +11,22 @@ const app = express();
 app.use(express.json());
 
 app.use(cors({
-  origin: "http://localhost:5173", // URL de tu frontend
+  origin: "http://localhost:5173", // URL frontend
   methods: ["GET", "POST", "PUT", "DELETE"],
-  credentials: true, // si vas a usar cookies o headers de autorización
+  credentials: true, 
 }));
 
-// Montamos el router en /users
 app.use("/users", userRouter);
 
-// Ruta de prueba para verificar que el servidor funciona
+
 app.get("/", (req, res) => {
   res.send("Servidor corriendo correctamente");
+});
+
+app.use((req, res, next) => {
+    res.status(404).json({
+        message: `Ruta no encontrada: ${req.method} ${req.originalUrl}`
+    });
 });
 
 const PORT = process.env.PORT || 3000;

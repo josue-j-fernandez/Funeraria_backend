@@ -1,17 +1,51 @@
 generator client {
-  provider = "prisma-client-js"
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
+
+
+enum RecordStatus {
+  ACTIVE    
+  INACTIVE  
+  PENDING
+}
+
+enum UserRole {
+  ADMIN
+  MANAGER
+  USER
+}
+
 model User {
-  id              Int     @id @default(autoincrement())
+  id              Int             @id @default(autoincrement())
   nombre          String
   apellidoPaterno String
   apellidoMaterno String
-  cedula          String  @unique
-  usuario         String  @unique
+  cedula          String          @unique
+  usuario         String          @unique
   contrasena      String
+
+
+  rol             UserRole        @default(USER)
+
+  // CAMPOS DE AUDITORÍA Y ESTADO
+
+  status          RecordStatus    @default(ACTIVE)
+
+  createdAt       DateTime        @default(now())
+
+  updatedAt       DateTime        @updatedAt
+
+  createdByUserId Int?
+  createdBy       User?           @relation("CreatedRecords", fields: [createdByUserId], references: [id])
+
+  updatedByUserId Int?
+  updatedBy       User?           @relation("UpdatedRecords", fields: [updatedByUserId], references: [id])
+
+  createdRecords  User[]          @relation("CreatedRecords")
+  updatedRecords  User[]          @relation("UpdatedRecords")
 }
